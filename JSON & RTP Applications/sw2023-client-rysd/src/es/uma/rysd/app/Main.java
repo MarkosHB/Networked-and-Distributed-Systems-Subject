@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 import es.uma.rysd.entities.Person;
+import es.uma.rysd.entities.Vehicle;
 import es.uma.rysd.entities.World;
 
 public class Main {	
@@ -25,9 +26,10 @@ public class Main {
         sc = new Scanner(System.in);
 
         do{
-        	tallest(sw);
+        	//tallest(sw);
         	//whoBornIn1(sw);
 			//whoBornIn2(sw);
+			categoriaVehiculo(sw);
 	       	System.out.println("Desea otra ronda (s/n)?");
 	       	response = sc.nextLine();
 	    }while(response.equals("s"));
@@ -223,6 +225,67 @@ public class Main {
     		System.out.println("Fallaste :( " + error[rand.nextInt(error.length)]);
     	}
     }     
+
+	/* ------------------------------------- */
+	/* Método propio creado para la práctica */
+	/* ------------------------------------- */
+    // Se le muestra al usuario tres vehículos distintos y un tipo de vehículo
+    // Debe asociar la categoría a uno de los tres vehículos
+    public static void categoriaVehiculo(SWClient sw){
+    	// Obteniendo la cantidad de vehiculos almacenada
+    	int max_vehicles = sw.getNumberOfResources("vehicles");
+    	if (max_vehicles == 0){
+    		System.out.println("No se encontraron vehículos.");
+    		return;
+    	}
+    	
+    	System.out.println("Generando nueva pregunta...");
+    	// Cogiendo tres vehiculos al azar sin repetir
+        List<Integer> used = new ArrayList<Integer>();
+    	List<Vehicle> vehicles = new ArrayList<Vehicle>();
+    	int contador = 0;
+    	while(contador < 3){
+    		Integer p = getRandomResource(max_vehicles, used);
+    		Vehicle v = sw.getVehicle(sw.generateEndpoint("vehicles", p));
+    		if(v == null){
+    			// Hay casos en los que el servidor no reacciona a algunas peticiones
+    			// No creo que sea problema de mi código, así que opto por obviar los v = null
+    			continue; 
+    		} else {
+    			vehicles.add(v);
+    			contador++;
+    		}
+    		used.add(p);
+    	}
+    	
+    	// Elegimos una solución de las opciones ofrecidas
+    	Random r = new Random();
+    	String solution = vehicles.get(r.nextInt(3)).vehicle_class;
+    	
+    	// Escribiendo la pregunta y leyendo la opción
+    	Integer n = null;
+    	do{
+    		System.out.println("¿Qué vehículo es de la categoría " + solution + "? [0] " + vehicles.get(0).name +
+    							" , [1] " + vehicles.get(1).name + " o [2] " + vehicles.get(2).name );
+    		try{
+    			n = Integer.parseInt(sc.nextLine());
+    		}catch(NumberFormatException ex){
+    			n = -1;
+    		}
+    	}while(n != 0 && n != 1 && n!=2);
+    	
+    	// Mostrando la información de los vehiculos elegidos
+    	for(Vehicle v: vehicles){
+    		System.out.println(v.name + " es de la clase " + v.vehicle_class);
+    	}
+    	
+    	// Resultado
+    	if(solution == vehicles.get(n).vehicle_class){
+    		System.out.println("Enhorabuena!!! "+ success[rand.nextInt(success.length)]);
+    	} else {
+    		System.out.println("Fallaste :( " + error[rand.nextInt(error.length)]);
+    	}
+    }
   
 	private static String [] success = {"This is the way",
 			"Eres uno con la Fuerza. La Fuerza est� contigo",
